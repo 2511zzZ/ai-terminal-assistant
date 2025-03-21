@@ -13,6 +13,8 @@ import shutil
 import time
 import pyautogui
 
+from common import get_shell
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -51,14 +53,6 @@ def get_system_info():
         f"machine: {platform_machine}\n" + \
         f"processor: {platform_processor}\n" + \
         f"wsl: {'yes' if platform_wsl else 'no'}"
-
-
-def get_shell():
-    # return first non python parent process, and remove .exe
-    for process in psutil.Process(os.getppid()).parents():
-        if "python" not in process.name().lower():
-            return process.name().lower().replace(".exe", "")
-
 
 def get_shell_version(shell):
     if shell == "powershell":

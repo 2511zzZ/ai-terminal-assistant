@@ -2,15 +2,7 @@ import os
 import re
 import sys
 
-import psutil
-
-
-def get_shell():
-    # return first non python parent process, and remove .exe
-    for process in psutil.Process(os.getppid()).parents():
-        if "python" not in process.name().lower():
-            return process.name().lower().replace(".exe", "")
-
+from common import get_shell
 
 # Determine AI_TERMINAL_ASSISTANT_HOME based on the current python script location (full path)
 def get_assistant_home():
@@ -25,7 +17,7 @@ def confirm(template, path):
     yellow = "\033[93m"
     reset = "\033[0m"
     print(yellow + template + reset)
-    print("The above functions will be merged into your PowerShell profile:")
+    print("The above functions will be merged into your shell profile:")
     print(f"  {yellow}{path}{reset}")
     print("Press enter to continue, or Ctrl+C to cancel.")
     input()
@@ -83,6 +75,36 @@ elif shell == "bash":
     assistant_home = get_assistant_home().replace("\\", "/")
 
     profile_content_template_path = os.path.join(assistant_home, "setup/bash_profile.sh")
+    profile_content_template = open(profile_content_template_path, "r").read()
+    profile_content_template = profile_content_template.replace("$AI_TERMINAL_ASSISTANT_HOME", assistant_home)
+
+    # Let user check and confirm
+    confirm(profile_content_template, profile_path)
+
+    profile_content += '\n' + profile_content_template
+
+    # Write the profile content back to the profile
+    open(profile_path, "w").write(profile_content)
+elif shell == "zsh":
+    # Log
+    print("Installing Zsh profile...")
+
+    # Support colors in Windows Terminal
+    os.system('')
+
+    # Read the .bash_profile file
+    profile_path = os.path.expanduser("~/.zshrc")
+    profile_content = open(profile_path, "r").read()
+
+    # Use regex replace to remove function ai() {...} from the profile
+    profile_content = re.sub(r"function ai\(\) {.*?^}\s*", "", profile_content,
+                             flags=re.DOTALL | re.MULTILINE)
+
+    # Append content from the template to the profile
+    # use / instead of \ in Windows path
+    assistant_home = get_assistant_home().replace("\\", "/")
+
+    profile_content_template_path = os.path.join(assistant_home, "setup/zshrc.sh")
     profile_content_template = open(profile_content_template_path, "r").read()
     profile_content_template = profile_content_template.replace("$AI_TERMINAL_ASSISTANT_HOME", assistant_home)
 

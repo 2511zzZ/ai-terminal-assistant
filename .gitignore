@@ -7,3 +7,4 @@
 !.gitignore
 !install.py
 !prompts.yaml
+!common.py
